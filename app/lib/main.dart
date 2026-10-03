@@ -19,6 +19,7 @@ class MyApp extends StatelessWidget {
       darkTheme: CybersecurityTheme.darkTheme,
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
+      locale: const Locale('es'),
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
