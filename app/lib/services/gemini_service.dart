@@ -5,9 +5,9 @@ class GeminiService {
   final GenerativeModel _model;
   late ChatSession _chat;
   final String initialPrompt = """
-Você é um assistente inteligente especializado em pentest usando o firmware Marauder do ESP32. Seu objetivo é auxiliar o usuário a operar o Marauder, sugerindo comandos apropriados e explicando suas funções, sempre considerando o contexto do pentest que está sendo realizado no momento.
+Eres un asistente inteligente especializado en pentesting usando el firmware Marauder del ESP32. Tu objetivo es ayudar al usuario a operar el Marauder, sugiriendo los comandos apropiados y explicando sus funciones, teniendo siempre en cuenta el contexto del pentest que se está realizando en el momento. Responde siempre en español.
 
-IMPORTANTE: Mantenha suas respostas CONCISAS e DIRETAS. Máximo de 3-4 frases por resposta, focando no essencial.
+IMPORTANTE: Mantén tus respuestas CONCISAS y DIRECTAS. Máximo de 3-4 frases por respuesta, centrándote en lo esencial.
 """;
 
   GeminiService({required String apiKey})
@@ -29,18 +29,18 @@ IMPORTANTE: Mantenha suas respostas CONCISAS e DIRETAS. Máximo de 3-4 frases po
 
   Future<bool> testConnection() async {
     try {
-      print("Testando conexão com Gemini...");
+      print("Probando conexión con Gemini...");
       print("Modelo: gemini-2.5-flash");
 
-      final response = await _model.generateContent([Content.text("Teste")]);
+      final response = await _model.generateContent([Content.text("Prueba")]);
 
-      print("Resposta recebida: ${response.text?.isNotEmpty ?? false}");
+      print("Respuesta recibida: ${response.text?.isNotEmpty ?? false}");
       return response.text != null && response.text!.isNotEmpty;
     } on GenerativeAIException catch (e) {
-      print("Erro da API Gemini: ${e.message}");
+      print("Error de la API Gemini: ${e.message}");
       return false;
     } catch (e) {
-      print("Erro de conexão: $e");
+      print("Error de conexión: $e");
       return false;
     }
   }
@@ -53,19 +53,19 @@ IMPORTANTE: Mantenha suas respostas CONCISAS e DIRETAS. Máximo de 3-4 frases po
     try {
       if (deviceResponse.isNotEmpty) {
         await _chat.sendMessage(
-          Content.text("Resposta do ESP32: $deviceResponse"),
+          Content.text("Respuesta del ESP32: $deviceResponse"),
         );
       }
 
       final enhancedUserMessage =
-          "$userMessage\n\n[Responda de forma CONCISA em no máximo 3 frases]";
+          "$userMessage\n\n[Responde de forma CONCISA en un máximo de 3 frases]";
 
       final response = await _chat.sendMessage(
         Content.text(enhancedUserMessage),
       );
 
       final responseText =
-          response.text ?? "Desculpe, não consegui processar sua solicitação.";
+          response.text ?? "Lo siento, no pude procesar tu solicitud.";
 
       return _limitResponseLength(responseText, maxChars: 500);
     } on GenerativeAIException catch (e) {
@@ -106,18 +106,18 @@ IMPORTANTE: Mantenha suas respostas CONCISAS e DIRETAS. Máximo de 3-4 frases po
     try {
       final response = await _chat.sendMessage(
         Content.text(
-          "Por favor, gere apenas o comando que deve ser enviado ao ESP32 baseado na sua última resposta. "
-          "Forneça apenas o comando, sem explicações adicionais.",
+          "Por favor, genera solo el comando que debe enviarse al ESP32 basándote en tu última respuesta. "
+          "Proporciona únicamente el comando, sin explicaciones adicionales.",
         ),
       );
 
       final command = response.text?.trim() ?? "";
       return command.endsWith('\\r\\n') ? command : command + '\\r\\n';
     } on GenerativeAIException catch (e) {
-      print("Erro da API Gemini ao gerar comando: ${e.message}");
+      print("Error de la API Gemini al generar comando: ${e.message}");
       return "";
     } catch (e) {
-      print("Erro ao gerar comando para ESP32: $e");
+      print("Error al generar comando para ESP32: $e");
       return "";
     }
   }
@@ -127,7 +127,7 @@ IMPORTANTE: Mantenha suas respostas CONCISAS e DIRETAS. Máximo de 3-4 frases po
   }
 
   void updateMaxTokens(int maxTokens) {
-    print("Configurando limite máximo de tokens para: $maxTokens");
+    print("Configurando límite máximo de tokens en: $maxTokens");
   }
 
   Future<String> getShortResponse(
@@ -137,9 +137,9 @@ IMPORTANTE: Mantenha suas respostas CONCISAS e DIRETAS. Máximo de 3-4 frases po
   }) async {
     try {
       final shortPrompt =
-          "$userMessage\n\n[RESPOSTA EM MÁXIMO 2 FRASES CURTAS]";
+          "$userMessage\n\n[RESPUESTA EN UN MÁXIMO DE 2 FRASES CORTAS]";
       final response = await _chat.sendMessage(Content.text(shortPrompt));
-      final responseText = response.text ?? "Erro ao processar.";
+      final responseText = response.text ?? "Error al procesar.";
       return _limitResponseLength(responseText, maxChars: maxChars);
     } catch (e) {
       return l10n.unexpectedError(e.toString());
@@ -149,7 +149,7 @@ IMPORTANTE: Mantenha suas respostas CONCISAS e DIRETAS. Máximo de 3-4 frases po
   Future<String> getCommandOnly(String userMessage) async {
     try {
       final commandPrompt =
-          "$userMessage\n\n[RESPONDA APENAS COM O COMANDO, SEM EXPLICAÇÕES]";
+          "$userMessage\n\n[RESPONDE ÚNICAMENTE CON EL COMANDO, SIN EXPLICACIONES]";
       final response = await _chat.sendMessage(Content.text(commandPrompt));
       final responseText = response.text?.trim() ?? "";
 
